@@ -69,7 +69,7 @@ contract('GameAssests', (accounts) =>{
         it('get uri', async () => {
             const result = await contract.getTokenURI(1);
             console.log(result);
-            assert.equal(result,'thisismyuri.com');
+            assert.equal(result,'thisismyuri.json');
         })
     })
 })
