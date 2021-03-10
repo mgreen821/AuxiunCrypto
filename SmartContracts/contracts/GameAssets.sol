@@ -15,6 +15,23 @@ contract GameAssests is ERC721{
 
     constructor() ERC721("Item", "ITM"){}
 
+    //Used to create a new item. It mints the item and sets the owner to the person who has created it.
+    function createItem(string memory tokenURI) public{
+        
+        _tokenIds.increment();
+
+        uint256 newItemId = _tokenIds.current();
+        _mint(msg.sender, newItemId);
+        _setTokenURI(newItemId, tokenURI);
+        
+        emit Minted(msg.sender, newItemId);
+    }
+    
+    //Returns the amount of tokens owned by a specific address.
+    function getBalance(address owner) public view returns(uint256){
+        return balanceOf(owner);
+    }
+
     //Returns the name of the token.
     function getName() public view returns(string memory){
         return name();
@@ -36,24 +53,7 @@ contract GameAssests is ERC721{
     }
 
     //Returns the address of the owner of a specific token. 
-    function ownerOfToken(uint256 tokenId) public view returns(address){
+   function ownerOfToken(uint256 tokenId) public view returns(address){
         return ownerOf(tokenId);
-    }
-
-    //Used to create a new item. It mints the item and sets the owner to the person who has created it.
-    function createItem(string memory tokenURI) public{
-        
-        _tokenIds.increment();
-
-        uint256 newItemId = _tokenIds.current();
-        _mint(msg.sender, newItemId);
-        _setTokenURI(newItemId, tokenURI);
-
-        emit Minted(msg.sender, newItemId);
-    }
-    
-    //Returns the amount of tokens owned by a specific address.
-    function getBalance(address owner) public view returns(uint256){
-        return balanceOf(owner);
     }
 }

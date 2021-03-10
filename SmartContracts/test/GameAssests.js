@@ -1,6 +1,5 @@
 const GameAssests = artifacts.require('./GameAssests.sol')
 const { assert } = require("chai");
-const truffleAssert = require("truffle-assertions");
 
 require('chai').use(require('chai-as-promised')).should();
 
@@ -46,7 +45,7 @@ contract('GameAssests', (accounts) =>{
 
     describe('balance of', async () =>{
         it('checks owners balance', async () => {
-            const result = await contract.getBalance('0xc089A74208bFda7A2956819480EaF4F9C2cafB04');
+            const result = await contract.getBalance('0x358a433024DaF8cCBAcC05De3BDC645Abff34A85');
             assert.equal(result, 1);
         })
     })
@@ -54,14 +53,14 @@ contract('GameAssests', (accounts) =>{
 
     describe('transfer item', async () =>{
         it('checks if item was transfered', async () => {
-            const result = await contract.transferItem("0xc089A74208bFda7A2956819480EaF4F9C2cafB04", "0x63aE3001c20F29A7d08bC2315dc75f35fe4450F8", 1)
+            const result = await contract.transferItem("0x358a433024DaF8cCBAcC05De3BDC645Abff34A85", "0x2438BB51B38A14011b8429D5D6F9204ABEbC264d", 1)
             const event = result.logs[1].args;
             const owner = await contract.ownerOfToken(1);
             console.log(owner);
-            assert.equal(event.from, '0xc089A74208bFda7A2956819480EaF4F9C2cafB04');
-            assert.equal(event.to, '0x63aE3001c20F29A7d08bC2315dc75f35fe4450F8');
+            assert.equal(event.from, '0x358a433024DaF8cCBAcC05De3BDC645Abff34A85');
+            assert.equal(event.to, '0x2438BB51B38A14011b8429D5D6F9204ABEbC264d');
             assert.equal(event.tokenId, 1);
-            assert.equal(owner, "0x63aE3001c20F29A7d08bC2315dc75f35fe4450F8");
+            assert.equal(owner, "0x2438BB51B38A14011b8429D5D6F9204ABEbC264d");
         })
     })
 
