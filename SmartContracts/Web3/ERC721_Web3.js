@@ -1,19 +1,19 @@
 const Web3 = require("web3"); //Requiring web3.
-const ganacheNetwork = "http://localhost:8545"; //This is our connection for ganache (Allows for easy testing)
-var web3 = new Web3(Web3.currentProvider || ganacheNetwork); //Setting the connection either to the currentProvider or Ganache.
-const compiledContract = require("../build/contracts/GameAssests.json"); //Grabbing the json version of our contract. ** Assets is misspelt in name of json file.
-const contract_address = "0x170B39A7D070Da55FAA349195Bf9C776193A3Fd0"; //This will be address of the contract on the blockchain. Specific to your local block chain change for testing.
+var web3 = new Web3("http://localhost:8545"); //Setting the connection either to the currentProvider or Ganache.
+const compiledContract = require("../build/contracts/GameAssets.json"); //Grabbing the json version of our contract. ** Assets is misspelt in name of json file.
+const contract_address = "0x4b05756B04f9602947924b22a9af04332fb77a9f"; //This will be address of the contract on the blockchain. Specific to your local block chain change for testing.
 const abi = compiledContract.abi; //Gets the abi of our compiled contract.
 
 var contractDetails = new web3.eth.Contract(abi, contract_address); //Allows to access the contracts details (Methods, events, constants, etc.)
 
 //Function sends information to createItem method in GameAssets contract. Accepts a uri and the specific blockchain address of creator.
-//Returns the token id that smart contract assigned the token. 
-const createItem = async (uri, creator) => {
+//Returns the token id that smart contract assigned the token.
+const createItem = async (uri, from) => {
   try {
+    let account = await web3.eth.getAccounts();//Sender will be account zero on the blockchain (Technically the creator).
     return contractDetails.methods
-      .createItem(uri)
-      .send({ from: creator, gas: 5000000 })
+      .createItem(uri, from)
+      .send({ from: account[0], gas: 5000000 })
       .then((receipt) => {
         let tokenId = receipt.events.Minted.returnValues.tokenId;
         return tokenId;
@@ -23,12 +23,16 @@ const createItem = async (uri, creator) => {
   }
 };
 
+
+
 // Function sends information to transferItem method in GameAssets contract. Accepts two specific block chain addresses, one for receiver and one for the sender and the tokenId for the specific item being transfered.
-const transferItem = (from, to, tokenId) => {
+const transferItem = async (to, tokenId) => {
   try {
+    let account = await web3.eth.getAccounts();//Sender will be account zero on the blockchain (Technically the creator).
+    let from = await ownerOfToken(tokenId);
     contractDetails.methods
-      .transferItem(from, to, tokenId)
-      .send({ from: from, gas: 5000000 });
+      .safeTransferFrom(from, to, tokenId)
+      .send({ from: account[0], gas: 5000000 });
     return "Item transfered to successfully";
   } catch (e) {
     return e.message;
@@ -36,7 +40,7 @@ const transferItem = (from, to, tokenId) => {
 };
 
 //Function sends information to ownerOfToken method in GameAssets contract. Accepts a tokenId for the specific item being searched and returns with the blockchain address of owner.
-const ownerOfToken = (tokenId) => {
+const ownerOfToken = async (tokenId) => {
   try {
     return contractDetails.methods.ownerOfToken(tokenId).call();
   } catch (e) {
@@ -44,9 +48,8 @@ const ownerOfToken = (tokenId) => {
   }
 };
 
-
 //Return the specific tokenURI based on the token id.
-const getTokenURI = (tokenId) => {
+const getTokenURI = async (tokenId) => {
   try {
     return contractDetails.methods.getTokenURI(tokenId).call();
   } catch (e) {
@@ -54,9 +57,8 @@ const getTokenURI = (tokenId) => {
   }
 };
 
-
-//Exports
 exports.ownerOfToken = ownerOfToken;
 exports.createItem = createItem;
 exports.transferItem = transferItem;
 exports.getTokenURI = getTokenURI;
+
