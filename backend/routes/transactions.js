@@ -74,7 +74,7 @@ router.route('/asset').post(verify, async (req, res) => {
 
   //Grabbing the current owner of the token before the transfer occurs.
   const owner = await erc721
-    .ownerOfToken(assest.token)
+    .ownerOfToken(asset.token)
     .then((result) => {
       return result
     })
@@ -82,7 +82,7 @@ router.route('/asset').post(verify, async (req, res) => {
 
   //TODO preform web3 transfer
   await erc721
-    .transferItem(user.blockchainAccount, assest.token)
+    .transferItem(user.blockchainAccount, asset.token)
     .catch((err) => res.status(400).json('Error: ' + err))
 
   //TODO update owner's coinBalance
@@ -94,6 +94,16 @@ router.route('/asset').post(verify, async (req, res) => {
   await User.findById(req.user)
     .then((user) => {
       user.coinbalance -= asset.price
+      balance = user.coinbalance
+
+      user.save().catch((err) => res.status(400).json('Error: ' + err))
+    })
+    .catch((err) => res.status(400).json('Error: ' + err));
+
+    //Updating owners balance in the db
+    await User.findOne({"blockchainAccount" : owner})
+    .then((user) => {
+      user.coinbalance += asset.price
       balance = user.coinbalance
 
       user.save().catch((err) => res.status(400).json('Error: ' + err))
