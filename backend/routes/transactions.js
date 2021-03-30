@@ -50,8 +50,7 @@ router.route('/coin/').post(verify, async (req, res) => {
 // reduce user balance and save, unlist asset from marketplace and save
 // return asset hash and new balance of user.
 router.route('/asset').post(verify, async (req, res) => {
-  let balance = 0.0
-  const assetHash = req.body.assetHash
+  const tokenId = req.body.assetHash
 
   //TODO possibly drop this database call and get user blockchain account id from JWT
   //Check database for user
@@ -61,9 +60,10 @@ router.route('/asset').post(verify, async (req, res) => {
 
   //asset info from db is Price, and if listed in marketplace
   //Check database for asset
-  const asset = await AssetsToken.findOne(assetHash).catch((err) =>
-    res.status(400).json('Error: ' + err),
-  )
+  const asset = await AssetsToken.findOne({ token: tokenId }).catch((err) =>
+    res.status(400).json("Error: " + err)
+  );
+
   if (!asset.inmarketplace)
     res.status(400).send('Asset is not available in the marketplace')
 
@@ -76,7 +76,7 @@ router.route('/asset').post(verify, async (req, res) => {
   const owner = await erc721
     .ownerOfToken(asset.token)
     .then((result) => {
-      return result
+      return result.toLowerCase();
     })
     .catch((err) => res.status(400).json('Error: ' + err))
 
@@ -94,17 +94,16 @@ router.route('/asset').post(verify, async (req, res) => {
   await User.findById(req.user)
     .then((user) => {
       user.coinbalance -= asset.price
-      balance = user.coinbalance
 
       user.save().catch((err) => res.status(400).json('Error: ' + err))
     })
     .catch((err) => res.status(400).json('Error: ' + err));
 
     //Updating owners balance in the db
-    await User.findOne({"blockchainAccount" : owner})
+    await User.findOne({blockchainAccount: owner})
     .then((user) => {
       user.coinbalance += asset.price
-      balance = user.coinbalance
+
 
       user.save().catch((err) => res.status(400).json('Error: ' + err))
     })
@@ -116,19 +115,15 @@ router.route('/asset').post(verify, async (req, res) => {
   //
   ////
 
-  await AssetsToken.findOne(assetHash)
-    .then((asset) => {
-      asset.inmarketplace = false
+  await AssetsToken.findOne({ token: tokenId }).then((asset) => {
+    asset.inmarketplace = false;
 
-      asset.save().then((res) => {
-        res.json({
-          success: true,
-          msg: `Successfully purchased ${assetHash} for ${asset.price}`,
-          newBalance: balance,
-        })
-      })
-    })
-    .catch((err) => res.status(400).json('Error: ' + err))
-})
-
+    asset
+      .save()
+      .then((res) =>
+      res.send(`Successfully purchased ${asset.token} for ${asset.price}`)
+      )
+      .catch((err) => res.status(400).json("Error: " + err));
+  });
+});
 module.exports = router

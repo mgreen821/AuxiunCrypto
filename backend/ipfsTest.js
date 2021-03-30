@@ -99,7 +99,6 @@ const catJson = async (cid) => {
 
 app.get("/api/marketplace/assets", async (req, res) => {
   //call db to get list of asset cids instead of hard coding
-  
   const assets = [];
   for (let i = 0; i < tempAssets.length; i++) {
     const item = tempAssets[i];

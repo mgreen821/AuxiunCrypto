@@ -23,7 +23,7 @@ Step 3: Open a new terminal and type
 geth attach \\.\pipe\geth.ipc
 
 Step 4: Unlock account zero by running 
-personal.unlockAccount("0xfe005d002767a320c45f4d2387bdfa1e5134646e","summer2")
+personal.unlockAccount("0xfe005d002767a320c45f4d2387bdfa1e5134646e","summer2", 0)
 
 Step 5: Start mining by running 
 miner.start()
